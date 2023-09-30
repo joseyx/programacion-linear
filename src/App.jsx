@@ -1,7 +1,11 @@
 import solver from "javascript-lp-solver";
+import React, { useEffect, useRef } from "react";
+import Chart from "chart.js/auto";
 
 const App = () => {
 	const model = {};
+	const chartRef = useRef(null);
+	const chartInstanceRef = useRef(null);
 
 	// Agrega propiedades al objeto model
 	model.optimize = "price";
@@ -33,6 +37,61 @@ const App = () => {
 
 	// resuelve el modelo
 	const results = solver.Solve(model);
+
+	const generateChart = (results) => {
+		const chartElement = chartRef.current;
+
+		if (chartElement) {
+			if (chartInstanceRef.current) {
+				chartInstanceRef.current.destroy();
+			}
+
+			const chartData = {
+				labels: ["Samsung S22", "Google Pixel 6 Pro"],
+				datasets: [
+					{
+						label: "Solución Óptima",
+						data: [results.product * 100, results.product2 * 100],
+						backgroundColor: [
+							"rgba(54, 162, 235, 0.5)",
+							"rgba(75, 192, 192, 0.5)",
+						],
+						borderColor: [
+							"rgba(54, 162, 235, 1)",
+							"rgba(75, 192, 192, 1)",
+						],
+						borderWidth: 1,
+					},
+				],
+			};
+
+			chartInstanceRef.current = new Chart(chartElement, {
+				type: "bar",
+				data: chartData,
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true,
+							max: 100,
+							ticks: {
+								stepSize: 10,
+							},
+						},
+					},
+				},
+			});
+		}
+	};
+	useEffect(() => {
+		generateChart(results);
+
+		return () => {
+			if (chartInstanceRef.current) {
+				chartInstanceRef.current.destroy();
+			}
+			chartInstanceRef.current = null;
+		};
+	}, [results]);
 
 	// muestra los resultados en consola
 	console.log(model.variables);
@@ -79,6 +138,7 @@ const App = () => {
 						</div>
 					</div>
 				</div>
+				<canvas ref={chartRef}></canvas>
 			</div>
 		</div>
 	);
