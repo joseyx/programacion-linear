@@ -1,117 +1,87 @@
-import { useState } from "react";
-import solver from "javascript-lp-solver/src/solver.js";
+import solver from "javascript-lp-solver";
 
-function App() {
-	const [constraints, setConstraints] = useState({});
-	const [variables, setVariables] = useState({});
-	const [optimize, setOptimize] = useState("");
-	const [results, setResults] = useState(null);
+const App = () => {
+	const model = {};
 
-	const handleAddConstraint = () => {
-		const constraintName = prompt(
-			"Ingrese el nombre de la variable a restringir:"
-		);
-		const constraintValue = prompt("Ingrese el valor de la restricción:");
-		setConstraints((prevConstraints) => ({
-			...prevConstraints,
-			[constraintName]: { max: Number(constraintValue) },
-		}));
+	// Agrega propiedades al objeto model
+	model.optimize = "price";
+	model.opType = "min";
+	model.constraints = {};
+	model.variables = {};
+
+	// agrega restricciones al objeto model
+	model.constraints.screenSize = { min: 6 };
+	model.constraints.memory = { min: 128 };
+
+	console.log(model.constraints);
+
+	// agrega variables al objeto model
+	model.variables.product = {
+		name: "Samsung Galaxy S22",
+		price: 799,
+		screenSize: 6.1,
+		memory: 128,
 	};
 
-	const handleAddVariable = () => {
-		const variableName = prompt("Ingrese el nombre del producto:");
-		const variableValues = {};
-		const variableValueCount = prompt(
-			"Ingrese la cantidad de valores que tendrá la variable:"
-		);
-
-		for (let i = 0; i < variableValueCount; i++) {
-			const valueName = prompt(
-				`Ingrese el nombre de la variable ${i + 1}:`
-			);
-			const value = prompt(`Ingrese el valor de la variable ${i + 1}:`);
-			variableValues[valueName] = Number(value);
-		}
-
-		setVariables((prevVariables) => ({
-			...prevVariables,
-			[variableName]: variableValues,
-		}));
+	// agrega un nuevo telefono al objeto model
+	model.variables.product2 = {
+		name: "Google Pixel 6 Pro",
+		price: 999,
+		screenSize: 6.2,
+		memory: 256,
 	};
 
-	const handleSolve = () => {
-		const model = {
-			optimize,
-			opType: "min",
-			constraints,
-			variables,
-		};
+	// resuelve el modelo
+	const results = solver.Solve(model);
 
-		const solverResults = solver.Solve(model);
-		setResults(solverResults);
-	};
+	// muestra los resultados en consola
+	console.log(model.variables);
+	console.log(results);
 
 	return (
-		<div className="container mx-auto p-4">
-			<h1 className="text-2xl font-bold mb-4">
-				Problema de minimización. Programación Lineal
-			</h1>
-
-			<div className="mb-4">
-				<h2 className="text-lg font-bold mb-2">Variables</h2>
-				<button
-					className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-					onClick={handleAddVariable}
-				>
-					Agregar variable
-				</button>
-				<pre className="mt-2 p-2 bg-gray-200">
-					{JSON.stringify(variables, null, 2)}
-				</pre>
-			</div>
-
-			<div className="mb-4">
-				<h2 className="text-lg font-bold mb-2">Restricciones</h2>
-				<button
-					className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-					onClick={handleAddConstraint}
-				>
-					Agregar restricción
-				</button>
-				<pre className="mt-2 p-2 bg-gray-200">
-					{JSON.stringify(constraints, null, 2)}
-				</pre>
-			</div>
-
-			<div className="mb-4">
-				<h2 className="text-lg font-bold mb-2">Optimización</h2>
-				<label className="block mb-2">
-					Variable a optimizar:
-					<input
-						className="border border-gray-400 rounded px-2 py-1"
-						type="text"
-						value={optimize}
-						onChange={(e) => setOptimize(e.target.value)}
-					/>
-				</label>
-				<button
-					className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-					onClick={handleSolve}
-				>
-					Mostrar solución
-				</button>
-			</div>
-
-			{results && (
-				<div>
-					<h2 className="text-lg font-bold mb-2">Resultados</h2>
-					<pre className="p-2 bg-gray-200">
-						{JSON.stringify(results, null, 2)}
-					</pre>
+		<div className="bg-gray-100 min-h-screen">
+			<div className="container mx-auto py-8">
+				<h1 className="text-3xl font-bold mb-4 text-center text-gray-800">
+					Programacion linear
+				</h1>
+				<p className="text-lg text-center mb-8 text-gray-700">
+					Obtener mediante la minimización, cuál teléfono inteligente
+					es una mejor compra basándose en el precio y ciertas
+					limitaciones establecidas.
+				</p>
+				<div className="grid grid-cols-2 gap-8">
+					<div className="bg-white p-8 rounded-lg shadow-md">
+						<h2 className="text-xl font-bold mb-4 text-gray-800">
+							Samsung S22
+						</h2>
+						<p className="mb-2">
+							Solucion optima: {results.product * 100}%
+						</p>
+						<div className="h-4 bg-blue-500 rounded-full">
+							<div
+								className="h-full bg-blue-200 rounded-full"
+								style={{ width: `${results.product}%` }}
+							></div>
+						</div>
+					</div>
+					<div className="bg-white p-8 rounded-lg shadow-md">
+						<h2 className="text-xl font-bold mb-4 text-gray-800">
+							Goole pixel 6 PRO
+						</h2>
+						<p className="mb-2">
+							Solucion optima: {results.product2 * 100}%
+						</p>
+						<div className="h-4 bg-green-500 rounded-full">
+							<div
+								className="h-full bg-green-200 rounded-full"
+								style={{ width: `${results.product2}%` }}
+							></div>
+						</div>
+					</div>
 				</div>
-			)}
+			</div>
 		</div>
 	);
-}
+};
 
 export default App;
